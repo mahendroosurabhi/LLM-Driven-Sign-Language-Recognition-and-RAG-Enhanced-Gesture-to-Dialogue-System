@@ -1,0 +1,19 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch master
+#
+# Initial commit
+#
+# Changes to be committed:
+#	new file:   .gitignore
+#	new file:   custom_rec.py
+#	new file:   custom_with_rates.csv
+#	new file:   extracted_keypoints.py
+#	new file:   live_demo.py
+#	new file:   requirements.txt
+#	new file:   sign_language.py
+#	new file:   sign_model.py
+#	new file:   table.ipynb
+#
