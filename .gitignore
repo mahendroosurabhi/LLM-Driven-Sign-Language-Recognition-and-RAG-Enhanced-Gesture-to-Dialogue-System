@@ -1,0 +1,55 @@
+# --- raw / source video data ---
+# WLASL videos are huge and not yours to redistribute
+*.mp4
+*.avi
+*.mov
+custom_videos/
+
+# --- generated indexes (rebuildable from raw data) ---
+index_with_rates.csv
+clean_index.csv
+custom_index.csv
+
+# --- extracted keypoints (large, regenerable via run_all) ---
+data/keypoints/
+data_normalized.npz
+
+# --- model checkpoints ---
+*.pt
+*.pth
+best_model_aug.pt
+best_model_baseline.pt
+
+# --- labels (small, but tends to churn per-run; ignore if you regenerate often) ---
+labels.json
+labels_baseline.json
+labels_custom.json
+
+# --- debug artifacts ---
+debug.jpg
+*.jpg
+*.png
+!docs/**/*.png    # keep images you deliberately put in a docs folder, if any
+
+# --- python ---
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+venv/
+.venv/
+env/
+*.egg-info/
+
+# --- jupyter ---
+.ipynb_checkpoints
+
+# --- OS / editor junk ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- MediaPipe / model downloads (if download_models() saves locally) ---
+*.task
+models/
