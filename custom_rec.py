@@ -1,27 +1,3 @@
-"""
-record_custom.py
-================
-Record your own sign clips from a webcam and index them with the same columns
-as the WLASL dataframe in table.ipynb, so they can be concatenated straight in
-and pushed through extract_video / run_all.
-
-Run from a TERMINAL, not from inside Jupyter (the preview window needs a real
-event loop):
-
-    python record_custom.py --words yes no help --takes 10
-    python record_custom.py --words-file my_words.txt --takes 10 --seconds 2.5
-
-Controls while it runs:
-    SPACE   start a take (3-2-1 countdown, then it records)
-    k / y   keep the take you just recorded
-    r       retake it
-    n       skip to the next word
-    q       quit (everything kept so far is already saved)
-
-Every kept take is written to CUSTOM_DIR as mp4 and appended to
-custom_index.csv immediately, so a crash never loses earlier work.
-"""
-
 import argparse
 import ast
 import os

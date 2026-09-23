@@ -41,7 +41,7 @@ def resample(frames, n=N_FRAMES):
 
 
 class Recognizer:
-    def __init__(self, model_path="best_model.pt", labels_path="labels.json"):
+    def __init__(self, model_path="best_model_aug.pt", labels_path="labels.json"):
         self.labels = json.load(open(labels_path))
         self.model = SignGRU(len(self.labels))
         self.model.load_state_dict(torch.load(model_path, map_location="cpu"))
