@@ -10,13 +10,14 @@ N_FRAMES = 32
 class SignGRU(nn.Module):
     def __init__(self, n_classes, in_dim=225, hidden=128):
         super().__init__()
-        self.gru = nn.GRU(in_dim, hidden, batch_first=True)
-        self.drop = nn.Dropout(0.4)
-        self.fc = nn.Linear(hidden, n_classes)
+        self.gru = nn.GRU(in_dim, hidden, batch_first=True,bidirectional=True)
+        self.drop = nn.Dropout(0.6)
+        self.fc = nn.Linear(hidden*2, n_classes)
 
     def forward(self, x):
         out, h = self.gru(x)
-        return self.fc(self.drop(h[-1]))
+        pooled = out.mean(dim=1)          # or out.max(dim=1).values
+        return self.fc(self.drop(pooled))
 
 
 def normalize(seq):
@@ -33,7 +34,6 @@ def normalize(seq):
         p[t, found] = (p[t, found] - center) / scale
     return p.reshape(len(p), 225)
 
-
 def resample(frames, n=N_FRAMES):
     """Any number of frame vectors -> exactly n evenly spaced ones (same idea as training)."""
     idx = np.linspace(0, len(frames) - 1, n).round().astype(int)
@@ -41,10 +41,11 @@ def resample(frames, n=N_FRAMES):
 
 
 class Recognizer:
-    def __init__(self, model_path="best_model_aug.pt", labels_path="labels.json"):
-        self.labels = json.load(open(labels_path))
+    def __init__(self, model_path="best_model_aug.pt"):
+        ckpt = torch.load(model_path, map_location="cpu")
+        self.labels = ckpt["labels"]
         self.model = SignGRU(len(self.labels))
-        self.model.load_state_dict(torch.load(model_path, map_location="cpu"))
+        self.model.load_state_dict(ckpt["state_dict"])
         self.model.eval()
 
     def predict(self, seq_raw, k=3):

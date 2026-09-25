@@ -3,6 +3,7 @@ import numpy as np
 
 from extracted_keypoints import download_models, make_landmarkers, frame_features, MAX_WIDTH
 from sign_model import Recognizer
+from chat_langchain import get_reply   # your LangChain file — must expose get_reply(list_of_words) -> str
 
 # --- tuning knobs -----------------------------------------------------
 MIN_FRAMES = 10        # ignore segments shorter than this (accidental flicker)
@@ -24,7 +25,7 @@ def hands_present(vec):
 
 
 def wrap_sentence(words, max_chars=60):
-    """Split the running sentence into lines so it doesn't run off screen."""
+    """Split a line of words so it doesn't run off screen."""
     lines, cur = [], ""
     for w in words:
         cand = (cur + " " + w).strip()
@@ -36,6 +37,10 @@ def wrap_sentence(words, max_chars=60):
     if cur:
         lines.append(cur)
     return lines or [""]
+
+
+def wrap_text(text, max_chars=60):
+    return wrap_sentence(text.split(), max_chars)
 
 
 def main():
@@ -51,8 +56,9 @@ def main():
     frames = []
     no_hand_run = 0
     sentence = []
-    last_call = None  # (word, conf) shown briefly after each segment
-    note = "Sign a word to begin. BACKSPACE=undo  c=clear  q=quit"
+    last_call = None      # (word, conf) shown briefly after each segment
+    last_reply = None     # LLM's reply text, shown until the next send
+    note = "Sign a word to begin. BACKSPACE=undo  c=clear  s=send  q=quit"
 
     while True:
         ok, frame = cap.read()
@@ -89,7 +95,7 @@ def main():
                     last_call = (word, conf)
                     if conf >= CONF_THRESHOLD:
                         sentence.append(word)
-                        note = "Sign the next word..."
+                        note = "Sign the next word... (s=send)"
                     else:
                         note = f"Low confidence ({conf:.2f}), not added"
                 else:
@@ -106,9 +112,16 @@ def main():
             w_, c_ = last_call
             put(view, f"last: {w_} ({c_:.2f})", 60, (0, 255, 0))
 
-        for i, line in enumerate(wrap_sentence(sentence)):
-            put(view, line, view.shape[0] - 20 - 30 * (len(wrap_sentence(sentence)) - 1 - i),
-                (255, 255, 0), 0.8)
+        y = 90
+        for line in wrap_sentence(sentence):
+            put(view, line, y, (255, 255, 0), 0.8)
+            y += 30
+
+        if last_reply:
+            y += 10
+            for line in wrap_text(f"reply: {last_reply}"):
+                put(view, line, y, (255, 0, 255), 0.7)
+                y += 28
 
         cv2.imshow("Sign sentence demo", view)
 
@@ -118,15 +131,29 @@ def main():
         elif key == ord("c"):
             sentence = []
             last_call = None
+            last_reply = None
             note = "Cleared. Sign a word to begin."
         elif key in (8, 127):  # BACKSPACE (varies by platform)
             if sentence:
                 sentence.pop()
                 note = "Removed last word."
+        elif key == ord("s"):
+            if not sentence:
+                note = "Nothing to send yet."
+            else:
+                note = "Sending..."
+                cv2.imshow("Sign sentence demo", view)   # paint "Sending..." before we block
+                cv2.waitKey(1)
+
+                last_reply = get_reply(sentence)          # blocks here until the LLM responds
+                sentence = []
+                note = "Sign the next sentence... (s=send)"
 
     cap.release()
     cv2.destroyAllWindows()
     print("Final sentence:", " ".join(sentence))
+    if last_reply:
+        print("Last reply:", last_reply)
 
 
 if __name__ == "__main__":
