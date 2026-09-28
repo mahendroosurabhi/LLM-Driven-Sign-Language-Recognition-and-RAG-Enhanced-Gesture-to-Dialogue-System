@@ -3,14 +3,14 @@ import numpy as np
 
 from extracted_keypoints import download_models, make_landmarkers, frame_features, MAX_WIDTH
 from sign_model import Recognizer
-from chat_langchain import get_reply   # your LangChain file — must expose get_reply(list_of_words) -> str
+from chat_langchain import get_reply 
 
-# --- tuning knobs -----------------------------------------------------
-MIN_FRAMES = 10        # ignore segments shorter than this (accidental flicker)
-MAX_FRAMES = 90        # force-cut a segment if it runs this long without a pause
-PAUSE_FRAMES = 8        # consecutive no-hand frames that count as "sign finished"
-CONF_THRESHOLD = 0.5    # only add a word if top-1 confidence is at least this
-N_POSE_POINTS = 33      # indices 0:33 = pose, 33:54 = left hand, 54:75 = right hand
+
+MIN_FRAMES = 10     
+MAX_FRAMES = 90       
+PAUSE_FRAMES = 8      
+CONF_THRESHOLD = 0.5   
+N_POSE_POINTS = 33      
 
 
 def put(view, text, y, color=(255, 255, 255), scale=0.7):

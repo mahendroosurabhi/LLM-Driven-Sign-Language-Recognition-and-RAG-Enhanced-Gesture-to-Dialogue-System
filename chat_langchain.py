@@ -1,30 +1,4 @@
-"""
-chat_chain.py
-=============
-Turns a list of recognized sign words into a natural sentence + a spoken-style
-reply, using Gemini 3.6 Flash via LangChain, with conversation history kept
-per session.
 
-Setup:
-    pip install langchain langchain-google-genai
-
-    Set your API key before running (get one from Google AI Studio):
-        Windows (cmd):   set GOOGLE_API_KEY=your-key-here
-        Windows (ps):    $env:GOOGLE_API_KEY="your-key-here"
-        Mac/Linux:       export GOOGLE_API_KEY=your-key-here
-    or set os.environ["GOOGLE_API_KEY"] below directly (fine for local testing,
-    don't commit a real key to git).
-
-Used by live_sentence_demo.py as:
-    from chat_chain import get_reply
-    reply = get_reply(["help", "doctor"])          # uses the default session
-    reply = get_reply(["help", "doctor"], session_id="user1")   # named session
-
-Model name note: "gemini-3.6-flash" is current as of mid/late 2026. Google
-renames and retires model strings fairly often — if you get a 404 / not-found
-error from the API, check https://ai.google.dev/gemini-api/docs/models for
-the current string and update MODEL_NAME below.
-"""
 import os
 
 from langchain_core.chat_history import BaseChatMessageHistory
@@ -65,6 +39,23 @@ chain = prompt | model
 
 _store: dict[str, BaseChatMessageHistory] = {}   # session_id -> history, kept in memory only
 
+def _extract_text(content) -> str:
+    """Gemini via langchain_google_genai can return content as a plain string
+    or as a list of content blocks (text blocks plus internal metadata like
+    'extras': {'signature': ...}). We only want the text parts, joined."""
+    if isinstance(content, str):
+        return content.strip()
+
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict) and block.get("type") == "text":
+                parts.append(block.get("text", ""))
+        return " ".join(p for p in parts if p).strip()
+
+    return str(content).strip()
 
 def _get_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in _store:
@@ -88,7 +79,7 @@ def get_reply(words: list[str], session_id: str = "default") -> str:
         {"input": text},
         config={"configurable": {"session_id": session_id}},
     )
-    return response.content
+    return _extract_text(response.content)
 
 
 def reset_session(session_id: str = "default") -> None:
@@ -97,7 +88,6 @@ def reset_session(session_id: str = "default") -> None:
 
 
 if __name__ == "__main__":
-    # quick manual test: python chat_chain.py
     print(get_reply(["hello"]))
     print(get_reply(["help", "doctor"]))
     print(get_reply(["thank", "you"]))
