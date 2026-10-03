@@ -1,0 +1,8 @@
+samples: 148
+top1: 0.7230
+top3: 0.8649
+top5: 0.9189
+macro_f1: 0.7408
+gate: 0.5000
+accepted: 0.7703
+gated_acc: 0.8509

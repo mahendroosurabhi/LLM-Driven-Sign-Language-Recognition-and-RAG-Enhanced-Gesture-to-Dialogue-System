@@ -8,9 +8,6 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 MODEL_NAME = "gemini-3.6-flash"
-
-# os.environ["GOOGLE_API_KEY"] = "put-your-key-here"   # uncomment if you'd rather set it here
-
 SYSTEM_PROMPT = """You are having a spoken conversation with a Deaf or hard-of-hearing \
 person who communicates using ASL. Their signs are converted to words by an unreliable \
 sign-language recognition model, so you will receive a rough, sometimes wrong, list of \
@@ -40,9 +37,6 @@ chain = prompt | model
 _store: dict[str, BaseChatMessageHistory] = {}   # session_id -> history, kept in memory only
 
 def _extract_text(content) -> str:
-    """Gemini via langchain_google_genai can return content as a plain string
-    or as a list of content blocks (text blocks plus internal metadata like
-    'extras': {'signature': ...}). We only want the text parts, joined."""
     if isinstance(content, str):
         return content.strip()
 
@@ -72,8 +66,6 @@ chat = RunnableWithMessageHistory(
 
 
 def get_reply(words: list[str], session_id: str = "default") -> str:
-    """words: recognized signs in order, e.g. ["help", "doctor"].
-    Returns the model's reply as plain text."""
     text = " ".join(words)
     response = chat.invoke(
         {"input": text},
@@ -83,7 +75,6 @@ def get_reply(words: list[str], session_id: str = "default") -> str:
 
 
 def reset_session(session_id: str = "default") -> None:
-    """Clear a session's history, e.g. when starting a new conversation."""
     _store.pop(session_id, None)
 
 

@@ -11,7 +11,7 @@ class SignGRU(nn.Module):
     def __init__(self, n_classes, in_dim=225, hidden=128):
         super().__init__()
         self.gru = nn.GRU(in_dim, hidden, batch_first=True,bidirectional=True)
-        self.drop = nn.Dropout(0.6)
+        self.drop = nn.Dropout(0.45)
         self.fc = nn.Linear(hidden*2, n_classes)
 
     def forward(self, x):

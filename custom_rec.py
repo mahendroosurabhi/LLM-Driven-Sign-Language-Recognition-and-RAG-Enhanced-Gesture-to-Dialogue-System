@@ -35,7 +35,6 @@ def open_camera(index, width, height):
 
 
 def show(frame, lines, color=(255, 255, 255)):
-    """Mirror for display only. The saved frames are never mirrored."""
     view = cv2.flip(frame, 1)
     for i, text in enumerate(lines):
         y = 30 + i * 32
@@ -85,7 +84,6 @@ def record_take(cap, gloss, take_no, seconds, countdown):
 
 
 def review(frames, fps, gloss, take_no):
-    """Loop the take back. Returns True to keep, False to retake, None to quit."""
     delay = max(1, int(1000 / (fps or 30)))
     while True:
         for f in frames:
@@ -109,8 +107,6 @@ def write_clip(frames, fps, path):
     return w, h
 
 
-# ------------------------------------------------------------------- index --
-
 def load_index():
     if INDEX_CSV.exists():
         df = pd.read_csv(INDEX_CSV)
@@ -133,7 +129,8 @@ def next_take_number(gloss):
     return int((df["gloss"] == gloss).sum()) + 1
 
 
-# -------------------------------------------------------------------- main --
+
+
 
 def main():
     ap = argparse.ArgumentParser()
